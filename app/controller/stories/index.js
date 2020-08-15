@@ -1,20 +1,11 @@
-const validate = require("../../../utils/validate");
 const keys = require("../../../config/keys");
 const caching = require("../../../utils/caching");
 const rp = require("request-promise");
 
 async function top_stories(data) {
-	// validation
-	let { errors, isValid } = validate.validate_top_stories_req(data);
-	if (!isValid) {
-		return {
-			status: false,
-			data: errors,
-		};
-	}
 	let cache_key = "top_stories";
 	let result = await caching.get_result(cache_key);
-	if (result && result["status"] && false) {
+	if (result && result["status"]) {
 		return result["data"];
 	} else {
 		result = await get_data_from_firebase(data);

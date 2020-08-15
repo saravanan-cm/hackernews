@@ -1,4 +1,3 @@
-const validate = require("../../../utils/validate");
 const keys = require("../../../config/keys");
 const caching = require("../../../utils/caching");
 const rp = require("request-promise");
@@ -15,7 +14,7 @@ async function top_parent_comments(data) {
 }
 
 async function get_data_from_firebase(data) {
-	let options = {
+	var options = {
 		method: "GET",
 		uri:
 			keys.hackernew_base_url +
@@ -107,7 +106,7 @@ function transform_response(results, data, type) {
 async function attach_user_details(comments, data) {
 	var request_options = [];
 	for (let each_comments of comments) {
-		options = {
+		let options = {
 			method: "GET",
 			uri:
 				keys.hackernew_base_url +

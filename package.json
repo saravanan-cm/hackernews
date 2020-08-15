@@ -5,7 +5,8 @@
 	"main": "server.js",
 	"scripts": {
 		"start": "nodemon server.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"lint": "eslint ."
 	},
 	"author": "Saravanan C M",
 	"license": "ISC",
@@ -26,6 +27,7 @@
 		"validator": "^13.0.0"
 	},
 	"devDependencies": {
+		"eslint": "^7.7.0",
 		"nodemon": "^2.0.2"
 	}
 }
