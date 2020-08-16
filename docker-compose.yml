@@ -1,9 +1,11 @@
 version: "3"
 services:
-    redis: 
-        image: 'redis'
+    redis:
+        image: "redis"
         ports:
             - "6000:6379"
+        networks:
+            - backend
 
     api:
         image: paytm-cms
@@ -12,8 +14,12 @@ services:
             - backend
         ports:
             - "5050:5000"
-        volumes:
-            - ./:/Saravanan/paytm/custom
+        depends_on:
+            - redis
+        links:
+            - "redis"
+        environment:
+            redis_host: "redis"
 
 networks:
     backend:
