@@ -6,7 +6,7 @@ var keys = require("../config/keys");
 var client = asyncRedis.createClient({
 	host: keys.redis_host,
 	port: keys.redis_port,
-	expire: 6000,
+	expire: 600,
 });
 
 client.get("past_stories").then((reply) => {

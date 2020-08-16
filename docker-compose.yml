@@ -1,0 +1,20 @@
+version: "3"
+services:
+    redis: 
+        image: 'redis'
+        ports:
+            - "6000:6379"
+
+    api:
+        image: paytm-cms
+        build: .
+        networks:
+            - backend
+        ports:
+            - "5050:5000"
+        volumes:
+            - ./:/Saravanan/paytm/custom
+
+networks:
+    backend:
+        driver: bridge

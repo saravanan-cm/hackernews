@@ -1,5 +1,5 @@
 {
-	"name": "hacker-news",
+	"name": "hackernews-saravanan",
 	"version": "1.0.0",
 	"description": "API to get top stories, comments and user data",
 	"main": "server.js",
