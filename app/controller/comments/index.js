@@ -1,18 +1,33 @@
 const keys = require("../../../config/keys");
 const caching = require("../../../utils/caching");
+const error_handling = require("../../../utils/error_handling");
 const rp = require("request-promise");
 
 async function top_parent_comments(data) {
-	let cache_key = "comments_" + data["id"].toString();
-	let result = await caching.get_result(cache_key);
-	if (result && result["status"]) {
-		return result["data"];
-	} else {
-		result = await get_data_from_firebase(data);
-		return result;
+	let resp_data = [];
+	try {
+		let cache_key = "comments_" + data["id"].toString();
+		let result = await caching.get_result(cache_key);
+
+		// To get data from cache, if it's not a test environment
+		if (result && result["status"] && process.env.NODE_ENV != "test") {
+			resp_data = result["data"];
+		} else {
+			result = await get_data_from_firebase(data);
+			resp_data = result;
+		}
+		return {
+			status: true,
+			message:
+				"Top 10 parent comments are retirved for the requested story",
+			data: resp_data,
+		};
+	} catch (err) {
+		return error_handling.transform_exception(err);
 	}
 }
 
+// Function to get story and it's comments data from hacker news
 async function get_data_from_firebase(data) {
 	var options = {
 		method: "GET",
@@ -30,7 +45,6 @@ async function get_data_from_firebase(data) {
 			resp = story_details["kids"];
 		}
 	}
-	console.log("ids len---   ", resp.length);
 	var request_options = [];
 	for (let each_comments of resp) {
 		options = {
@@ -47,7 +61,6 @@ async function get_data_from_firebase(data) {
 
 	let results = await Promise.all(request_options);
 	results = transform_response(results, data, "comments");
-	console.log("comments results--------        ", results);
 	results = await attach_user_details(results, data);
 	return results;
 }
@@ -55,8 +68,8 @@ async function get_data_from_firebase(data) {
 function transform_response(results, data, type) {
 	let all_users = {};
 	let all_comments = [];
-	console.log("transform type----  ", type);
 	if (type == "user") {
+		// block to calculate and set age in years
 		for (let each_user of results) {
 			let curr_time = Math.floor(new Date().getTime() / 1000);
 			let years = Math.round(
@@ -74,7 +87,7 @@ function transform_response(results, data, type) {
 				age_in_years: years,
 			};
 		}
-		console.log("transform all_users----  ", all_users);
+
 		for (let each_comments of data) {
 			let obj = each_comments;
 			obj["age"] =
@@ -84,6 +97,7 @@ function transform_response(results, data, type) {
 			all_comments.push(obj);
 		}
 	} else {
+		// logic to sort by child comments count
 		for (let each_comments of results) {
 			let each_obj = {
 				text: each_comments["text"],
@@ -103,6 +117,7 @@ function transform_response(results, data, type) {
 	return all_comments;
 }
 
+// Function to get user details of each comment and caching the result
 async function attach_user_details(comments, data) {
 	var request_options = [];
 	for (let each_comments of comments) {
@@ -120,7 +135,6 @@ async function attach_user_details(comments, data) {
 
 	let results = await Promise.all(request_options);
 	results = transform_response(results, comments, "user");
-	console.log("user results--------        ", results);
 	let resp_data = {};
 	resp_data["comments_" + data["id"].toString()] = results;
 	caching.set_result(resp_data);

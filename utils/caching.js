@@ -3,12 +3,10 @@ var keys = require("../config/keys");
 
 /*  Configuring redis client with default expire for this app. 
     We can move this while setting value for the key also */
-console.log(keys.redis_host)
-console.log(keys.redis_port)
 var client = asyncRedis.createClient({
 	host: keys.redis_host,
 	port: keys.redis_port,
-	expire: 600,
+	expire: 60000,
 });
 
 client.get("past_stories").then((reply) => {

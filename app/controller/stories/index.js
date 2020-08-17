@@ -1,39 +1,58 @@
 const keys = require("../../../config/keys");
 const caching = require("../../../utils/caching");
+const error_handling = require("../../../utils/error_handling");
 const rp = require("request-promise");
 
 async function top_stories(data) {
 	let cache_key = "top_stories";
-	let result = await caching.get_result(cache_key);
-	if (result && result["status"]) {
-		return result["data"];
-	} else {
-		result = await get_data_from_firebase(data);
-		return result;
+	let resp_data = [];
+	try {
+		let result = await caching.get_result(cache_key);
+		// To get data from cache, if it's not a test environment
+		if (result && result["status"] && process.env.NODE_ENV != "test") {
+			resp_data = result["data"];
+		} else {
+			resp_data = await get_data_from_firebase(data);
+		}
+		return {
+			status: true,
+			message: "Top stories data successfully retrived",
+			data: resp_data,
+		};
+	} catch (err) {
+		return error_handling.transform_exception(err);
 	}
 }
 
 async function past_stories() {
 	let cache_key = "past_stories";
-	let result = await caching.get_result(cache_key);
-	if (result && result["status"]) {
-		return result["data"];
-	} else {
-		return [];
+	let resp_data = [];
+	try {
+		let result = await caching.get_result(cache_key);
+		if (result && result["status"]) {
+			resp_data = result["data"];
+		}
+		return {
+			status: true,
+			message: "Past stories data successfully retrived",
+			data: resp_data,
+		};
+	} catch (err) {
+		return error_handling.transform_exception(err);
 	}
 }
 
 async function get_data_from_firebase(data) {
+	let resp = [];
 	let options = {
 		method: "GET",
 		uri: keys.hackernew_base_url + "/topstories.json",
 	};
 	let story_ids = await rp(options);
-	let resp = [];
 	if (story_ids) {
 		resp = JSON.parse(story_ids);
 	}
-	console.log("ids len---   ", resp.length);
+	let results = [];
 	var request_options = [];
 	for (let each_story of resp) {
 		options = {
@@ -47,8 +66,7 @@ async function get_data_from_firebase(data) {
 		};
 		request_options.push(rp(options));
 	}
-
-	let results = await Promise.all(request_options);
+	results = await Promise.all(request_options);
 	return transform_response(results, data);
 }
 
@@ -82,7 +100,6 @@ function transform_response(results, data) {
 	caching.get_result("past_stories").then((reply) => {
 		if (reply["status"]) {
 			reply = reply["data"];
-			console.log("past_stories reply---   ", reply);
 			Array.prototype.push.apply(reply, top_stories_res);
 			caching.set_result({
 				past_stories: reply,
