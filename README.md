@@ -9,7 +9,7 @@
 -   Commands to setup the application with Docker. You need to have docker and docker-compose in your system as pre-requisites for this setup.
     -   docker-compose build
     -   docker-compose up
--   Hola, You did it. You can use the postman collection and try the API now...
+-   Yay, You did it. You can use the postman collection and try the API now...
 
 ## Steps to setup the project in local (without Docker)
 
@@ -17,7 +17,7 @@
     -   npm install
     -   npm start
     -   npm test (to run the test cases)
--   Hola, You did it. You can use the postman collection and try the API now...
+-   Yay, You did it. You can use the postman collection and try the API now...
 
 ## Postman collection link
 
